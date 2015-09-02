@@ -49,7 +49,7 @@ public class UnfollowProcessor {
 		IDs ids;
 		System.out.println("Listing followers's ids.");
 		do {
-			ids = twitter.getFollowersIDs("Dinoop_nair", cursor);
+			ids = twitter.getFollowersIDs(config.USER_NAME, cursor);
 			for (long id : ids.getIDs()) {
 				followers.add(id);
 				// User user = twitter.showUser(id);
@@ -66,7 +66,7 @@ public class UnfollowProcessor {
 		try{
 			DateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss");
 			Date date = new Date();
-			Date daysAgo = new DateTime(date).minusDays(1).toDate();
+			Date daysAgo = new DateTime(date).plusDays(1).toDate();
 			SearchResponse response =null;
 			System.out.println(dateFormat.format(daysAgo));
 			response = client.prepareSearch(config.INDEX_NAME)

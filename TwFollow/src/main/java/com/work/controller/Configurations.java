@@ -2,6 +2,7 @@ package com.work.controller;
 
 import java.io.File;
 import java.io.FileInputStream;
+import java.io.IOException;
 import java.io.InputStream;
 import java.net.URL;
 import java.util.Properties;
@@ -16,15 +17,22 @@ public class Configurations {
 	public static boolean propertyFileAssigned=false;
 	FileReader reader=new FileReader();
 	
-	public String CONSUMER_KEY="tImNqeA4fBYOpzN1Xj3UAWZmY";
+/*	public String CONSUMER_KEY="tImNqeA4fBYOpzN1Xj3UAWZmY";
 	public String CONSUMER_KEY_SECRET="k930mX7wGz0UJr4r2drSKSJG6VrTOuAfEiioq35NWSjXXch8RL";
 	public String ACCESS_TOKEN="269190737-J9SqFt4mVYN45KAdFL0JzGtWWbE5EKbc4zvp3245";
-	public String ACCESS_TOKEN_SECRET="MhEGj1WnnTOke6fbV3vQmSfeMeJPlGqYKU2Qb6V7NVyHU";
+	public String ACCESS_TOKEN_SECRET="MhEGj1WnnTOke6fbV3vQmSfeMeJPlGqYKU2Qb6V7NVyHU";*/
+	
+	public String CONSUMER_KEY="";
+	public String CONSUMER_KEY_SECRET="";
+	public String ACCESS_TOKEN="";
+	public String ACCESS_TOKEN_SECRET="";
 	
 	public String IP="localhost";
 	public String PORT="9300";
 	public String CLUSTER_NAME = "elasticsearch";
-	public String INDEX_NAME = "afollowesnew";
+	public String INDEX_NAME = "";
+	public String USER_NAME="";
+
 	public String TYPE_NAME = "tweet";
 
 	public  String KEYWORDS_FILE = "/data/keywords";
@@ -55,11 +63,29 @@ public class Configurations {
 	}
 	private Configurations()
 	{
+		String CONFIG_FILE=properties.getProperty("CONFIG_FILE");
+		System.out.println(CONFIG_FILE);
+		if (CONFIG_FILE!=null){
+			InputStream resource=null;
+			try {
+				
+				resource = new FileInputStream(CONFIG_FILE);
+				properties.load(resource);
+			} catch (IOException e) {
+				e.printStackTrace();
+			}
+		}
 		ACCESS_TOKEN=properties.getProperty("ACCESS_TOKEN",ACCESS_TOKEN);
+		System.out.println(ACCESS_TOKEN);
 		ACCESS_TOKEN_SECRET=properties.getProperty("ACCESS_TOKEN_SECRET",ACCESS_TOKEN_SECRET);
 		CONSUMER_KEY=properties.getProperty("CONSUMER_KEY",CONSUMER_KEY);
 		CONSUMER_KEY_SECRET=properties.getProperty("CONSUMER_KEY_SECRET",CONSUMER_KEY_SECRET);
 
+		INDEX_NAME=properties.getProperty("INDEX_NAME",INDEX_NAME);
+		USER_NAME=properties.getProperty("USER_NAME",USER_NAME);
+		System.out.println(INDEX_NAME);
+		System.out.println(USER_NAME);
+		
 		KEYWORDS_FILE=properties.getProperty("KEYWORDS_FILE",reader.getPath(KEYWORDS_FILE));
 		LANGUAGE_FILE=properties.getProperty("LANGUAGE_FILE",reader.getPath(LANGUAGE_FILE));
 		LOCATION_FILE=properties.getProperty("LOCATION_FILE",reader.getPath(LOCATION_FILE));

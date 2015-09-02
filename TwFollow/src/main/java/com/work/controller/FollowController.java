@@ -102,6 +102,8 @@ public class FollowController {
 			twitter = tf.getInstance();
 			ReadLists read=new ReadLists();
 			String keywords[] = read.readKeywords();
+			//keywords[0]="a";
+			
 			String languages[] = read.readLanguages();
 			//keywords[2]="SRK12Million";
 			FilterQuery fq = new FilterQuery();
@@ -128,7 +130,6 @@ public class FollowController {
 		}
 		logger.info("property file : "+twitterPropertyFile);
 		config=Configurations.getInstance(twitterPropertyFile);
-
 		FollowController controller = new FollowController();
 		controller.run();
 	}

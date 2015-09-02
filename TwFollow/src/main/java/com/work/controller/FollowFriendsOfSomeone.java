@@ -13,11 +13,12 @@ import twitter4j.Status;
 import twitter4j.Twitter;
 import twitter4j.TwitterException;
 import twitter4j.TwitterFactory;
-import twitter4j.User;
 import twitter4j.conf.Configuration;
+import twitter4j.conf.ConfigurationBuilder;
 
-public class FollowProcessor {
+public class FollowFriendsOfSomeone {
 
+	
 	static public int count=0;
 	int maxCount=950;
 	static public ElasticSearch es=new ElasticSearch();
@@ -26,10 +27,38 @@ public class FollowProcessor {
 	static List<Long> friends=new ArrayList<Long>();
 	static List<Long> followers=new ArrayList<Long>();
 
-
-
-	public static void twitterInstance(Configuration twconfig){
+	private void process() throws TwitterException {
+		twitterInstance();
+		System.out.println(friends);
+		System.out.println(followers);
+		List<Long> folows = getSomeonesFollowers();
+		System.out.println(folows);
+		for(Long idlong : folows){
+			System.out.println(idlong);
+			run(idlong);
+		}
+		
+	}
+		
+	public static void twitterInstance(){
 		try{
+			
+			es.createClient(config.IP,Integer.parseInt(config.PORT), config.CLUSTER_NAME);
+			
+			
+			ConfigurationBuilder cb = new ConfigurationBuilder();
+			cb.setDebugEnabled(true)
+			.setUserStreamWithFollowingsEnabled(true)
+			.setJSONStoreEnabled(true)
+			.setIncludeEntitiesEnabled(true)
+			.setIncludeMyRetweetEnabled(true)
+			.setUserStreamRepliesAllEnabled(true)
+			.setOAuthConsumerKey(config.CONSUMER_KEY)
+			.setOAuthConsumerSecret(config.CONSUMER_KEY_SECRET)
+			.setOAuthAccessToken(config.ACCESS_TOKEN)
+			.setOAuthAccessTokenSecret(config.ACCESS_TOKEN_SECRET);
+
+			Configuration twconfig=cb.build();
 			TwitterFactory tf = new TwitterFactory(twconfig);
 			twitter = tf.getInstance();
 
@@ -42,7 +71,7 @@ public class FollowProcessor {
 					friends.add(id);
 				}
 			} while ((cursor = ids.getNextCursor()) != 0);
-
+			
 			cursor = -1;
 			System.out.println("Listing followers's ids.");
 			do {
@@ -56,24 +85,28 @@ public class FollowProcessor {
 		}
 		System.out.println("friends : "+friends.size());
 	}
-
-	public int run(Status status) {
-		try{
-			System.out.println(status.getUser().getScreenName()+"                  "+status.getText());
-			if(status.getUser().getFollowersCount() > 2000){
-				System.out.println("followers "+status.getUser().getFollowersCount());
-				return 1;
+	public List<Long> getSomeonesFollowers() throws TwitterException{
+		List<Long> folwrs=new ArrayList<Long>();
+		long cursor = -1;
+		IDs ids;
+		System.out.println("Listing followers's ids.");
+		do {
+			ids = twitter.getFollowersIDs("ac3c0fc50b0f4ff", cursor);
+			for (long id : ids.getIDs()) {
+				folwrs.add(id);
 			}
+		} while ((cursor = ids.getNextCursor()) != 0);
+		return folwrs;
+	}
 
-			long idLong=status.getUser().getId();
-			String screenName=status.getUser().getName();
-			String name=status.getUser().getScreenName();
+	public int run(Long idLong) {
+		try{
 			JSONObject json=new JSONObject();
 			json.put("time", getTime());
 			json.put("author", idLong);
-			json.put("name", name);
+			json.put("name", String.valueOf(idLong));
 			json.put("processed",false);
-			String id=String.valueOf(status.getUser().getId());
+			String id=String.valueOf(idLong);
 			Map<String, Object> doc=es.getDocument(config.INDEX_NAME,config.TYPE_NAME ,id);
 
 			if(doc==null){
@@ -84,21 +117,14 @@ public class FollowProcessor {
 					System.out.println("is my follwer");
 				}
 				else{
+					count++;
+					System.out.println("count---------"+count);
 					if(count>=maxCount){
 						System.out.println("max");
 						return 0;
 					}
-					Client client=new Client();
-					String gender=client.getGender(screenName);
-					System.out.println(screenName+"====="+gender);
-					if(gender=="female" || gender.equals("female")){
-						System.out.println("***************************************************************");
-						count++;
-						System.out.println("count---------"+count);
-						es.indexDocument(config.INDEX_NAME,config.TYPE_NAME,json,id);
-						//System.exit(0);
-						follow(idLong);
-					}
+					es.indexDocument(config.INDEX_NAME,config.TYPE_NAME,json,id);
+					follow(idLong);
 				}
 			}else{
 				System.out.println("already processed @@@@@@");
@@ -126,6 +152,11 @@ public class FollowProcessor {
 		SimpleDateFormat f = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss");
 		f.setTimeZone(TimeZone.getTimeZone("GMT"));
 		return f.format(new Date());
+	}
+	public static void main(String args[]) throws TwitterException{
+		
+		FollowFriendsOfSomeone fol=new FollowFriendsOfSomeone();
+		fol.process();
 	}
 
 }

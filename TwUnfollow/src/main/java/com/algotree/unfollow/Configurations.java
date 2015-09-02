@@ -3,6 +3,7 @@ package com.algotree.unfollow;
 import java.io.File;
 
 import java.io.FileInputStream;
+import java.io.IOException;
 import java.io.InputStream;
 import java.net.URL;
 import java.util.Properties;
@@ -15,17 +16,18 @@ public class Configurations {
 	public static boolean propertyFileAssigned=false;
 	
 	
-	public String CONSUMER_KEY="MGvSyAbiygeSfXqIBPXJDPFOy";
-	public String CONSUMER_KEY_SECRET="GcZibTqbOYdCtQMinuGYawPOW6yqUgHNyvXTCcRLSyr6fgriGd";
-	public String ACCESS_TOKEN="269190737-wdsFgqykXUwlnKmYPexZ1vTrDLasquKjfi0HDWRq";
-	public String ACCESS_TOKEN_SECRET="DdPYV290jOi47854IWQdoG0YxsUUj7rXjruqK76peFWcn";
+	public String CONSUMER_KEY="";
+	public String CONSUMER_KEY_SECRET="";
+	public String ACCESS_TOKEN="";
+	public String ACCESS_TOKEN_SECRET="";
 	
 	public String IP="localhost";
 	public String PORT="9300";
 	public String CLUSTER_NAME = "elasticsearch";
-	public String INDEX_NAME = "afollowesnew";
+	public String INDEX_NAME = "";
 	public String TYPE_NAME = "tweet";
-
+	public String USER_NAME="";
+	
 	public  String KEYWORDS_FILE = "data/keywords";
 	public  String LANGUAGE_FILE = "data/languages";
 	
@@ -54,10 +56,27 @@ public class Configurations {
 	}
 	private Configurations()
 	{
+		String CONFIG_FILE=properties.getProperty("CONFIG_FILE");
+		System.out.println(CONFIG_FILE);
+		if (CONFIG_FILE!=null){
+			InputStream resource=null;
+			try {
+				
+				resource = new FileInputStream(CONFIG_FILE);
+				properties.load(resource);
+			} catch (IOException e) {
+				e.printStackTrace();
+			}
+		}
 		ACCESS_TOKEN=properties.getProperty("ACCESS_TOKEN",ACCESS_TOKEN);
 		ACCESS_TOKEN_SECRET=properties.getProperty("ACCESS_TOKEN_SECRET",ACCESS_TOKEN_SECRET);
 		CONSUMER_KEY=properties.getProperty("CONSUMER_KEY",CONSUMER_KEY);
 		CONSUMER_KEY_SECRET=properties.getProperty("CONSUMER_KEY_SECRET",CONSUMER_KEY_SECRET);
+	
+		INDEX_NAME=properties.getProperty("INDEX_NAME",INDEX_NAME);
+		USER_NAME=properties.getProperty("USER_NAME",USER_NAME);
+		System.out.println(INDEX_NAME);
+		System.out.println(USER_NAME);
 	}
 	public static Configurations getInstance() {
 		if(_INSTANCE==null) {
